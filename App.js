@@ -9,8 +9,6 @@ function TelaLogin({ navigation }) {
   const [password, setPassword] = useState('');
 
   const handleLoginPress = () => {
-    // Aqui você pode adicionar a lógica para verificar o email e senha na base de dados
-    // Se estiver correto, você pode redirecionar para a tela de conteúdo
     if (email === localStorage.getItem('email') && password === localStorage.getItem('password')) {
       navigation.navigate('TelaConteudo');
     } else {
@@ -70,18 +68,18 @@ function TelaCadastro({ navigation }) {
   const handleCadastroPress = () => {
     if (email && password) {
       try {
-        // Salvar os dados localmente (simulando armazenamento)
+        //salvar os dados localmente (simulando armazenamento)
         localStorage.setItem('email', email);
         localStorage.setItem('password', password);
 
-        // Exibir alerta de sucesso e redirecionar para a tela de login
+        // alerta de cadastro
         Alert.alert('Cadastro efetuado com sucesso');
         navigation.navigate('TelaLogin');
       } catch (error) {
         console.log(error);
       }
     } else {
-      // Exibir mensagem de erro se os campos não estiverem preenchidos
+    //alerta de validaçao
       Alert.alert('Preencha todos os campos');
     }
   };
