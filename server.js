@@ -6,27 +6,28 @@ const middlewares = jsonServer.defaults();
 server.use(middlewares);
 server.use(jsonServer.bodyParser);
 
-// Endpoint de Cadastro
 server.post('/usuarios', (req, res) => {
   const { email, password } = req.body;
-  const usuarios = router.db.get('usuarios');
 
-  const novoUsuario = {
-    id: usuarios.length + 1,
-    email,
-    password
-  };
+  if (!email || !password) {
+    res.status(400).json({ error: 'Preencha todos os campos' });
+    return;
+  }
 
-  usuarios.push(novoUsuario);
-  router.db.write();
+  const usuarios = router.db.get('usuarios').value();
+  const novoUsuario = { id: usuarios.length + 1, email, password };
+
+  router.db.get('usuarios').push(novoUsuario).write();
 
   res.status(201).json(novoUsuario);
 });
 
-// Endpoint de Login
 server.post('/usuarios/login', (req, res) => {
   const { email, password } = req.body;
-  const usuario = router.db.get('usuarios').find({ email, password }).value();
+  const usuario = router.db
+    .get('usuarios')
+    .find({ email, password })
+    .value();
 
   if (usuario) {
     res.status(200).json(usuario);

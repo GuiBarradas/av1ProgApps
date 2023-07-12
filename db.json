@@ -1,3 +1,24 @@
 {
-  "usuarios": []
+  "usuarios": [
+    {
+      "id": 1,
+      "email": "cesar88",
+      "password": "cesar88"
+    },
+    {
+      "id": 2,
+      "email": "guilherme.barradas@hotmail.com",
+      "password": "teste123"
+    },
+    {
+      "id": 3,
+      "email": "teste123",
+      "password": "teste123"
+    },
+    {
+      "id": 4,
+      "email": "teste77",
+      "password": "teste77"
+    }
+  ]
 }
