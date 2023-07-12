@@ -1,18 +1,51 @@
 import React, { useState } from 'react';
-import { Text, View, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
+import {
+  Text,
+  View,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import axios from 'axios';
+
+const API_URL = 'http://192.168.0.15:3000'; // Endereço do servidor JSON
 
 // Tela de Login
 function TelaLogin({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [setTimeoutId, setSetTimeoutId] = useState(null);
 
-  const handleLoginPress = () => {
-    if (email === localStorage.getItem('email') && password === localStorage.getItem('password')) {
-      navigation.navigate('TelaConteudo');
-    } else {
-      Alert.alert('Credenciais inválidas');
+  const handleLoginPress = async () => {
+    try {
+      const response = await axios.post(`${API_URL}/usuarios/login`, { email, password });
+
+      if (response.status === 200) {
+        navigation.navigate('TelaConteudo');
+      } else {
+        setAlertTitle('Credenciais inválidas');
+        setAlertMessage('');
+        setModalVisible(true);
+        const id = setTimeout(() => {
+          setModalVisible(false);
+        }, 5000);
+        setSetTimeoutId(id);
+      }
+    } catch (error) {
+      console.error(error);
+      setAlertTitle('Erro');
+      setAlertMessage('Algo deu errado. Por favor, tente novamente.');
+      setModalVisible(true);
+      const id = setTimeout(() => {
+        setModalVisible(false);
+      }, 5000);
+      setSetTimeoutId(id);
     }
   };
 
@@ -56,6 +89,20 @@ function TelaLogin({ navigation }) {
 
         <Text style={styles.forgotPasswordText}>Esqueceu a senha?</Text>
       </View>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.alertTitle}>{alertTitle}</Text>
+            <Text style={styles.alertMessage}>{alertMessage}</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -64,24 +111,57 @@ function TelaLogin({ navigation }) {
 function TelaCadastro({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [setTimeoutId, setSetTimeoutId] = useState(null);
 
-  const handleCadastroPress = () => {
-    if (email && password) {
-      try {
-        //salvar os dados localmente (simulando armazenamento)
-        localStorage.setItem('email', email);
-        localStorage.setItem('password', password);
+  const handleCadastroPress = async () => {
+    try {
+      if (email && password) {
+        const response = await axios.post(`${API_URL}/usuarios`, { email, password });
 
-        // alerta de cadastro
-        Alert.alert('Cadastro efetuado com sucesso');
-        navigation.navigate('TelaLogin');
-      } catch (error) {
-        console.log(error);
+        if (response.status === 201) {
+          setAlertTitle('Sucesso');
+          setAlertMessage('Cadastro efetuado com sucesso');
+          setModalVisible(true);
+          const id = setTimeout(() => {
+            setModalVisible(false);
+            navigation.navigate('TelaLogin');
+          }, 5000);
+          setSetTimeoutId(id);
+        } else {
+          setAlertTitle('Erro');
+          setAlertMessage('Não foi possível cadastrar o usuário');
+          setModalVisible(true);
+          const id = setTimeout(() => {
+            setModalVisible(false);
+          }, 5000);
+          setSetTimeoutId(id);
+        }
+      } else {
+        setAlertTitle('Erro');
+        setAlertMessage('Preencha todos os campos');
+        setModalVisible(true);
+        const id = setTimeout(() => {
+          setModalVisible(false);
+        }, 5000);
+        setSetTimeoutId(id);
       }
-    } else {
-    //alerta de validaçao
-      Alert.alert('Preencha todos os campos');
+    } catch (error) {
+      console.error(error);
+      setAlertTitle('Erro');
+      setAlertMessage('Algo deu errado. Por favor, tente novamente.');
+      setModalVisible(true);
+      const id = setTimeout(() => {
+        setModalVisible(false);
+      }, 5000);
+      setSetTimeoutId(id);
     }
+  };
+
+  const handleLoginPress = () => {
+    navigation.navigate('TelaLogin');
   };
 
   return (
@@ -113,7 +193,24 @@ function TelaCadastro({ navigation }) {
         <TouchableOpacity style={styles.cadastroButton} onPress={handleCadastroPress}>
           <Text style={styles.cadastroButtonText}>Cadastrar</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.loginButton} onPress={handleLoginPress}>
+          <Text style={styles.loginButtonText}>Voltar para o Login</Text>
+        </TouchableOpacity>
       </View>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.alertTitle}>{alertTitle}</Text>
+            <Text style={styles.alertMessage}>{alertMessage}</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -208,5 +305,31 @@ const styles = StyleSheet.create({
   conteudoText: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+    marginTop: 20,
+    marginRight: 20,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    borderColor: 'purple',
+    borderWidth: 2,
+    borderStyle: 'solid',
+  },
+  alertTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  alertMessage: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 16,
   },
 });
